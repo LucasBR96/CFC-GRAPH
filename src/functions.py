@@ -68,6 +68,39 @@ def search_in_depth(  V , E , key_s = lambda x : x ):
 def transpose_graph( E ):
     return { ( v , u ) for u , v in E }
 
+def forest( d_tab ):
+    
+    V = set( d_tab.keys() )
+    s_fun = lambda x : d_tab[ x ][ START ]
+    e_fun = lambda x : d_tab[ x ][ END ]
+    d_fun = lambda x : d_tab[ x ][ DEPTH ]
+    
+    V1 = [ x for x in V if d_fun( x ) == 0 ]
+    V2 = list( V - set( V1 ) )
+
+    V1.sort( key = s_fun )
+    V2.sort( key = s_fun )
+    components = { x: set( [x] ) for x in V1 }
+
+    i , j = 0 , 0
+    while i < len( V1 ):
+        
+        x = V1[ i ]
+        ex = e_fun( x )
+
+        while j < len( V2 ):
+
+            y = V2[ j ]
+            sy = s_fun( y )
+
+            if not ( sy < ex ):
+                break
+
+            components[ x ].add( y )
+            j += 1
+        i += 1
+    return map( list, components.values() )
+
 # returns the set of strongly connected components of a Di-Graph
 def SCC( V , E ):
 
@@ -75,10 +108,10 @@ def SCC( V , E ):
 
     E_t = transpose_graph( E )
     m = max( dept[ u ][ END ] for u in dept ) + 1
-    f = lambda x : m - dept[ x ]
-    dept_prime = search_in_depth( V , E_t , f )
-
-    pass
+    end_fun = lambda x : m - dept[ x ][ END ]
+    dept_prime = search_in_depth( V , E_t , end_fun )
+    
+    return forest( d_tab )
 
 # yields graphs from a source file ----------------------------
 def graphs_from_file( path ):
