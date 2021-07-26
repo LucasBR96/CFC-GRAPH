@@ -37,7 +37,7 @@ def adj_tab( V , E , key_s = lambda x : x ):
     Tabaela de adjacência:
     Cada entrada é um nó do grafo e o valor correspondente é uma lista contendo os nós para os quais a
     entrada aponta.
-    essa lista é ordenada crescentemente dada alguma função
+    essa lista é ordenada decrescentemente dada alguma função
     '''
 
     tab = { u:[] for u in V }
@@ -48,10 +48,18 @@ def adj_tab( V , E , key_s = lambda x : x ):
         tab[ u ].sort( key = key_s, reverse = True )
     return tab
 
-def print_adj( adj ):
-    pass
 
 def depth_tab( adj ):
+
+    '''
+    tabela de profundidade, obtida após uma busca de profudindade.
+    Assim como a de adjacência, cada entrada é um nó de um grafo. Os valores correspondentes são
+    a tripla ordenada:
+
+        START - Momento que o nó começa a ser explorado
+        END   - Momento que termina
+        DEPTH - Profundidade da busca
+    '''
     
     seq = [ -1 ]*3
     dtab = { u : seq.copy() for u in V }
@@ -68,6 +76,8 @@ def depth_tab( adj ):
         dtab[ v ][ START ] = clock
         dtab[ v ][ DEPTH ] = len( stack )
         stack.append( v )
+
+        # Se a profundidade for zero, significa que ja foi removido do conjunto unvisited
         if dtab[ v ][ DEPTH ]:
             unvisited.remove( v )
 
@@ -79,6 +89,8 @@ def depth_tab( adj ):
         while stack:
 
             u = stack.pop()
+
+            # u termina de ser explorado ------------------------------------------------------
             if not adj[ u ]:
                 clock += 1
                 dtab[ u ][ END ] = clock
@@ -86,6 +98,8 @@ def depth_tab( adj ):
 
             stack.append( u )
             v = adj[ u ].pop()
+
+            # v ja foi explorado --------------------------------------------------------------
             if not( v in unvisited ):
                 continue
 
@@ -93,8 +107,16 @@ def depth_tab( adj ):
 
     return dtab
 
-def print_dtab( dtab ):
-    pass
+def print_tab( adj ):
+    
+    '''
+    serve tanto para tab de profundidade quanto de adjacência
+    '''
+
+    for u in adj.keys():
+        s1 = str( u )
+        s2 = " ".join( map( str , adj[ u ] ) )
+        print( s1 , '|' , s2 )
 
 def search_in_depth(  V , E , key_s = lambda x : x ):
     
@@ -105,40 +127,54 @@ def transpose_graph( E ):
     return { ( v , u ) for u , v in E }
 
 def forest( d_tab ):
-    
+
+    '''
+    divide os nos em arvores de busca de profundidade distintas.
+    O numero de arvores é o numero de nos que tem profundidade zero, vamos chamar esses nos de raiz. Um no de profundiadade diferente de 
+    zero pertence a uma arvore se seu valor Start for menor que o valor End da raiz.
+    '''
+
+    # Para ficar mais legível-----------------------------------------------------------------------------
     V = set( d_tab.keys() )
     s_fun = lambda x : d_tab[ x ][ START ]
     e_fun = lambda x : d_tab[ x ][ END ]
     d_fun = lambda x : d_tab[ x ][ DEPTH ]
     
+    # separando os nós de profundidade zero ( raiz ) dos demais -----------------------------------------
     V1 = [ x for x in V if d_fun( x ) == 0 ]
+    trees = { x: [x] for x in V1 }
     V2 = list( V - set( V1 ) )
-
+    
+    # --------------------------------------------------------------------------------------------------
+    # Otimizando a busca:
+    # Uma forma ingenua de obter as raizes seria testar todos os nos de V1 contra todos os nos de V2, o 
+    # que daria uma complexidade temporal de O( |V1|*|V2| ) = O( n² ). Melhor seria ordenar V1 e V2 de
+    # forma crescente quanto a Start. Se um V2[ j ] ( de um V2 ordenado ) tiver um Start maior que o End
+    # de um V1[ i ], então nenhum V2[ k ] com k >= j pertence à arvore com raiz em V1[ i ].
     V1.sort( key = s_fun )
     V2.sort( key = s_fun )
-    components = { x: [x] for x in V1 }
-
     i , j = 0 , 0
     while i < len( V1 ):
-        
         x = V1[ i ]
         ex = e_fun( x )
-
         while j < len( V2 ):
-
             y = V2[ j ]
             sy = s_fun( y )
-
             if not ( sy < ex ):
                 break
-
-            components[ x ].append( y )
+            trees[ x ].append( y )
             j += 1
         i += 1
+    #---------------------------------------------------------------------------------------------------
+
+
     return tuple( components.values() )
 
-# returns the set of strongly connected components of a Di-Graph
 def SCC( V , E ):
+   
+    '''
+    soluçaõ descrita no inicio do arquivo
+    '''
 
     dept = search_in_depth( V , E )
 
@@ -149,11 +185,10 @@ def SCC( V , E ):
     
     return forest( d_tab )
 
-# yields graphs from a source file ----------------------------
 def graphs_from_file( path ):
     
     fptr = open( path , "r" )
-    num_g = int( fptr.readline().split() ) # num of graphs
+    num_g = int( fptr.readline().split() ) 
     for i in range( num_g ):
         
         n = fptr.readline().split()
