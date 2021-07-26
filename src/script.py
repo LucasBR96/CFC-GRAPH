@@ -4,17 +4,17 @@ import os
 #print( os.getcwd() )
 if __name__ == "__main__":
 
-    path = ""
+    path = "src/input.txt"
     for V , E in graphs_from_file( path ):
 
-        print( "-"*100 )
+        print("\n", "-"*100 )
         print( "\nAdjency Table\n" )
         tab = adj_tab( V , E )
-        print_adj( tab )
+        print_tab( tab )
 
         print( "\nDepth Table\n" )
         tab = depth_tab( tab )
-        print_dtab( tab )
+        print_tab( tab )
 
         print( "\nStrongly Connected Components\n" )
         for comp in SCC( V , E ):

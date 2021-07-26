@@ -62,10 +62,10 @@ def depth_tab( adj ):
     '''
     
     seq = [ -1 ]*3
-    dtab = { u : seq.copy() for u in V }
+    dtab = { u : seq.copy() for u in adj.keys() }
 
     stack = []
-    unvisited = V.copy()
+    unvisited = set( adj.keys() )
     global clock
     clock = -1
 
@@ -77,13 +77,11 @@ def depth_tab( adj ):
         dtab[ v ][ DEPTH ] = len( stack )
         stack.append( v )
 
-        # Se a profundidade for zero, significa que ja foi removido do conjunto unvisited
-        if dtab[ v ][ DEPTH ]:
-            unvisited.remove( v )
+        unvisited.remove( v )
 
     while unvisited:
 
-        v = unvisited.pop()
+        v = min( unvisited )
         mark_visit( v )
 
         while stack:
@@ -112,8 +110,10 @@ def print_tab( adj ):
     '''
     serve tanto para tab de profundidade quanto de adjacência
     '''
-
-    for u in adj.keys():
+    
+    seq = ( list( adj.keys() ) )
+    seq.sort()
+    for u in seq:
         s1 = str( u )
         s2 = " ".join( map( str , adj[ u ] ) )
         print( s1 , '|' , s2 )
@@ -168,7 +168,7 @@ def forest( d_tab ):
     #---------------------------------------------------------------------------------------------------
 
 
-    return tuple( components.values() )
+    return tuple( trees.values() )
 
 def SCC( V , E ):
    
@@ -183,21 +183,22 @@ def SCC( V , E ):
     end_fun = lambda x : m - dept[ x ][ END ]
     dept_prime = search_in_depth( V , E_t , end_fun )
     
-    return forest( d_tab )
+    return forest( dept_prime )
 
 def graphs_from_file( path ):
     
     fptr = open( path , "r" )
-    num_g = int( fptr.readline().split() ) 
+    num_g = int( fptr.readline() ) 
     for i in range( num_g ):
-        
-        n = fptr.readline().split()
-        V = set( fptr.readline().split() )
-
         n = int( fptr.readline())
-        E = set()
-        for i in range( n ):
-            tup = tuple( fptr.readline().split() )
+        V , E = set() , set()
+        for j in range( n ):
+            u , v = fptr.readline().split()
+
+            V.add( u )
+            V.add( v )
+
+            tup = ( u , v )
             E.add( tup )
 
         yield V , E

@@ -1,6 +1,4 @@
 1
-7
-a b c d e f g
 11
 a b 
 a c
