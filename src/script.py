@@ -16,6 +16,8 @@ if __name__ == "__main__":
         tab = depth_tab( tab )
         print_tab( tab )
 
+        label_edge( E , tab )
+
         print( "\nStrongly Connected Components\n" )
         for comp in SCC( V , E ):
             comp.sort()

@@ -170,6 +170,27 @@ def forest( d_tab ):
 
     return tuple( trees.values() )
 
+def label_edge( E , d_tab ):
+    
+    E_list = list( E )
+    E_list.sort()
+
+    s_fun = lambda x : d_tab[ x ][ START ]
+    e_fun = lambda x : d_tab[ x ][ END ]
+    
+    print( "\nEdge labeling\n" )
+    for u , v in E_list:
+
+        label = "CRUZAMENTO"
+        if s_fun( u ) < s_fun( v ) < e_fun( u ):
+            label = "AVANÇO"
+        elif s_fun( v ) < s_fun( u ) < e_fun( v ):
+            label = "RETORNO"
+
+        s = "{} -> {} : {}".format( u , v , label )
+        print( s )
+
+
 def SCC( V , E ):
    
     '''
